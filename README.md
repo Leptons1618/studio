@@ -1,256 +1,161 @@
-# ChronoCanvas (Mobile)
+# ChronoCanvas Mobile
 
-This branch (`master`) hosts the **Expo / React Native mobile app**. The legacy Next.js web client has been moved to the `web-app` branch for reference.
+A React Native mobile application for ChronoCanvas journal app, built with Expo.
 
-## Branch Overview
+## 📱 Features
 
-| Branch | Purpose |
-| ------ | ------- |
-| `master` | Mobile app (active development) |
-| `web-app` | Archived web client (read‑only) |
+- **Google Authentication** - Secure login with Google accounts
+- **Journal Entry Creation** - Create and manage personal journal entries
+- **Cross-platform** - Runs on both Android and iOS
+- **Firebase Integration** - Real-time data synchronization
 
-View web app README:
-```bash
-git checkout web-app
-cat README.md
-git checkout master
-```
+## 🚀 Getting Started
 
----
+### Prerequisites
 
-## Features
+- Node.js (v18 or higher)
+- npm or yarn
+- Expo CLI
+- Android Studio (for Android development)
+- Xcode (for iOS development on macOS)
 
-- Email / (optional guest) authentication (Firebase Auth)
-- Create, edit, delete journal entries
-- Plain‑text content (legacy HTML auto‑stripped client-side)
-- Color‑coded entries
-- Real-time sync via Firestore
-- Local auth persistence with AsyncStorage
-- Toast feedback (non-blocking UX)
+### Installation
 
----
+1. **Install dependencies**:
+   ```bash
+   npm install
+   ```
 
-## Environment Setup (Mobile)
+2. **Set up environment variables**:
+   ```bash
+   cp .env.example .env
+   ```
+   
+   Update `.env` with your actual Firebase configuration values.
 
-Copy example env and fill Firebase values:
-```bash
-cp .env.example .env
-```
+3. **Start the development server**:
+   ```bash
+   npx expo start
+   ```
 
-`EXPO_PUBLIC_` prefix variables are exposed to the client.
+### Running on Device/Simulator
 
-```env
-EXPO_PUBLIC_FIREBASE_API_KEY=your_key
-EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
-EXPO_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
-EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
-EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=sender_id
-EXPO_PUBLIC_FIREBASE_APP_ID=app_id
-```
-
----
-
-## Install & Run
-
-```bash
-npm install
-npx expo start
-```
-
-Run platforms:
+#### Android
 ```bash
 npx expo run:android
-npx expo run:ios   # macOS only
+```
+
+#### iOS (macOS only)
+```bash
+npx expo run:ios
+```
+
+#### Web
+```bash
 npx expo start --web
 ```
 
----
+## 🏗️ Building for Production
 
-## Project Structure
-
-```
-src/
-   contexts/        # Auth + Toast providers
-   hooks/           # Firestore journal hook
-   lib/             # Firebase init w/ persistence
-   screens/         # Login, Main, CreateEntry, EntryDetail
-   types/           # Shared TS types
-```
-
----
-
-## Firebase Notes
-
-- Firestore path: users/{uid}/entries
-- Timestamps: serverTimestamp (createdAt/updatedAt)
-- Migration: Any stored HTML is stripped when loaded; consider a backfill script if you want to persist cleaned content.
-
----
-
-## Building (EAS)
-
-Preview / internal testing (Android APK):
+### Android APK (for testing)
 ```bash
 eas build --platform android --profile preview
 ```
-Production:
+
+### Android AAB (for Play Store)
 ```bash
 eas build --platform android --profile production
+```
+
+### iOS (macOS only)
+```bash
 eas build --platform ios --profile production
 ```
 
----
+## 📁 Project Structure
 
-## Development Tips
+```
+src/
+├── lib/
+│   └── firebase.ts          # Firebase configuration
+├── screens/
+│   ├── LoginScreen.tsx      # Authentication screen
+│   ├── MainScreen.tsx       # Main journal dashboard
+│   └── CreateEntryScreen.tsx # Entry creation screen
+└── components/              # Reusable UI components
+```
 
-- Use `console.log` / React Native Flipper for debugging
-- Toasts show ephemeral feedback; avoid modal Alerts except confirmations
-- Long-press entry on main list for quick Edit/Delete
+## 🔧 Configuration
 
----
+### Firebase Setup
 
-## Security
+1. Go to [Firebase Console](https://console.firebase.google.com/)
+2. Select your existing ChronoCanvas project
+3. Add an Android/iOS app to your project
+4. Download the configuration file
+5. Update your `.env` file with the configuration values
 
-- Never commit real `.env` values
-- Restrict Firestore security rules to user-owned paths
-- Consider enabling App Check for production
+### EAS Build Configuration
 
----
+The `eas.json` file contains build configurations:
 
-## Roadmap (Ideas)
+- **development**: For development builds with debugging
+- **preview**: For internal testing (APK for Android)
+- **production**: For app store releases
 
-- Offline queue for entry edits
-- Search / filter entries
-- Theming (dark mode)
-- Optional markdown formatting
-
----
-
-## License
-
-Private / internal use.
-
-## Environment Setup
-
-Before using ChronoCanvas, you need to configure your environment variables:
-
-1. Copy the example environment file:
-   ```bash
-   copy .env.example .env.local
-   ```
-
-2. Update the `.env.local` file with your actual values:
-
-### Firebase Configuration
-
-To set up Firebase:
-1. Go to the [Firebase Console](https://console.firebase.google.com/)
-2. Create a new project or select an existing one
-3. Navigate to Project Settings > General > Your apps
-4. Add a web app and copy the configuration values
-5. Update these variables in your `.env.local`:
+## 🌐 Environment Variables
 
 ```env
-NEXT_PUBLIC_FIREBASE_API_KEY=your_firebase_api_key_here
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project_id.firebasestorage.app
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
-NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
+EXPO_PUBLIC_FIREBASE_API_KEY=your_firebase_api_key
+EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+EXPO_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project.firebasestorage.app
+EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
+EXPO_PUBLIC_FIREBASE_APP_ID=your_app_id
 ```
 
-**Note:** Never commit your `.env.local` file to version control. It contains sensitive information.
+## 📦 Dependencies
 
-## Development
+- **Expo**: React Native framework
+- **React Navigation**: Navigation library
+- **Firebase**: Backend services
+- **React Native Safe Area Context**: Safe area handling
+- **React Native Screens**: Native screen components
 
-### Installing Dependencies
+## 🔐 Security Notes
 
+- Never commit `.env` files with real credentials
+- Use `.env.example` for sharing configuration templates
+- Environment variables with `EXPO_PUBLIC_` prefix are available to client-side code
+
+## 🚀 Deployment
+
+### Android Play Store
+1. Build production AAB: `eas build --platform android --profile production`
+2. Upload to Google Play Console
+3. Follow Play Store review process
+
+### iOS App Store (macOS required)
+1. Build production IPA: `eas build --platform ios --profile production`
+2. Upload to App Store Connect
+3. Follow App Store review process
+
+## 🛠️ Development
+
+### Running in Development Mode
 ```bash
-npm install
+npx expo start
 ```
 
-### Running the Development Server
+Then scan the QR code with:
+- **Android**: Expo Go app
+- **iOS**: Camera app or Expo Go app
 
-```bash
-npm run dev
-```
+### Debugging
+- Use React Native Debugger
+- Enable remote debugging in development builds
+- Use console.log statements for basic debugging
 
-The application will be available at `http://localhost:9002`.
+## 📄 License
 
-### Building for Production
-
-```bash
-npm run build
-npm run start
-```
-
-## Getting Started
-
-To begin using ChronoCanvas, you will need to sign in using your Google account.
-
-1.  Open the ChronoCanvas application.
-2.  Click on the "Sign in with Google" button.
-3.  Follow the prompts to authenticate with your Google account.
-
-Once successfully authenticated, you will be directed to your journal dashboard.
-
-## Managing Journal Entries
-
-ChronoCanvas allows you to easily create, edit, and delete your journal entries.
-
-### Creating a New Entry
-
-1.  On the journal dashboard, locate and click the button or icon to create a new entry (this is typically a prominent '+' or "New Entry" button).
-2.  A new entry editor will open.
-3.  Type your journal entry content into the provided text area.
-4.  Use the formatting and coloring options described in the following sections to customize your entry.
-5.  To save your entry, look for a "Save" or "Done" button and click it.
-
-### Editing an Existing Entry
-
-1.  On the journal dashboard, find the entry you wish to edit. Entries are typically displayed as cards.
-2.  Click on the entry card. This will open the entry in the editor.
-3.  Make the desired changes to the text or formatting.
-4.  Click the "Save" or "Done" button to update the entry.
-
-### Deleting an Entry
-
-1.  On the journal dashboard, locate the entry you want to delete.
-2.  Look for a delete icon (often a trash can) associated with the entry card.
-3.  Click the delete icon.
-4.  You may be prompted to confirm your decision to delete the entry. Confirm to proceed.
-
-## Text Formatting
-
-ChronoCanvas provides basic text formatting options to enhance your entries.
-
-When the entry editor is open, you will see a toolbar with formatting options:
-
--   **Bold:** Select the text you want to make bold and click the bold icon (often a 'B').
--   **Italics:** Select the text you want to italicize and click the italics icon (often an 'I').
--   **Underline:** Select the text you want to underline and click the underline icon (often a 'U').
-
-You can combine these formatting options on the same text.
-
-## Coloring Entries and Text
-
-ChronoCanvas offers options to color-code your entries and apply color to your text for visual organization and style.
-
-### Color-Coding Entries
-
-1.  When creating or editing an entry, look for an option to assign a color to the entry. This might be a color palette selector.
-2.  Click on the desired color from the provided palette.
-3.  This color will be applied to the entry card on the dashboard, helping you categorize or visually distinguish your entries.
-
-### Coloring Text within Entries
-
-1.  In the entry editor, select the text you wish to color.
-2.  Look for a text coloring tool, often represented by an 'A' with a color swatch or a palette icon.
-3.  Click on the text coloring tool to reveal a palette of 10 UI-matching colors.
-4.  Click on the desired color from the palette to apply it to the selected text.
-
-## Google Authentication
-
-ChronoCanvas uses Google Authentication to provide a secure and convenient way to access your journal. Your journal data is linked to your Google account, ensuring privacy and allowing you to access your entries across devices where you sign in with the same account.
-
-Simply follow the steps in the "Getting Started" section to sign in securely using your Google credentials.
+This project is private and proprietary to ChronoCanvas.
