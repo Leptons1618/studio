@@ -1,6 +1,134 @@
-# ChronoCanvas App Manual
+# ChronoCanvas (Mobile)
 
-Welcome to ChronoCanvas, your personal digital journal designed for reflection and organization. This manual will guide you through using the app's features.
+This branch (`master`) hosts the **Expo / React Native mobile app**. The legacy Next.js web client has been moved to the `web-app` branch for reference.
+
+## Branch Overview
+
+| Branch | Purpose |
+| ------ | ------- |
+| `master` | Mobile app (active development) |
+| `web-app` | Archived web client (read‑only) |
+
+View web app README:
+```bash
+git checkout web-app
+cat README.md
+git checkout master
+```
+
+---
+
+## Features
+
+- Email / (optional guest) authentication (Firebase Auth)
+- Create, edit, delete journal entries
+- Plain‑text content (legacy HTML auto‑stripped client-side)
+- Color‑coded entries
+- Real-time sync via Firestore
+- Local auth persistence with AsyncStorage
+- Toast feedback (non-blocking UX)
+
+---
+
+## Environment Setup (Mobile)
+
+Copy example env and fill Firebase values:
+```bash
+cp .env.example .env
+```
+
+`EXPO_PUBLIC_` prefix variables are exposed to the client.
+
+```env
+EXPO_PUBLIC_FIREBASE_API_KEY=your_key
+EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+EXPO_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
+EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=sender_id
+EXPO_PUBLIC_FIREBASE_APP_ID=app_id
+```
+
+---
+
+## Install & Run
+
+```bash
+npm install
+npx expo start
+```
+
+Run platforms:
+```bash
+npx expo run:android
+npx expo run:ios   # macOS only
+npx expo start --web
+```
+
+---
+
+## Project Structure
+
+```
+src/
+   contexts/        # Auth + Toast providers
+   hooks/           # Firestore journal hook
+   lib/             # Firebase init w/ persistence
+   screens/         # Login, Main, CreateEntry, EntryDetail
+   types/           # Shared TS types
+```
+
+---
+
+## Firebase Notes
+
+- Firestore path: users/{uid}/entries
+- Timestamps: serverTimestamp (createdAt/updatedAt)
+- Migration: Any stored HTML is stripped when loaded; consider a backfill script if you want to persist cleaned content.
+
+---
+
+## Building (EAS)
+
+Preview / internal testing (Android APK):
+```bash
+eas build --platform android --profile preview
+```
+Production:
+```bash
+eas build --platform android --profile production
+eas build --platform ios --profile production
+```
+
+---
+
+## Development Tips
+
+- Use `console.log` / React Native Flipper for debugging
+- Toasts show ephemeral feedback; avoid modal Alerts except confirmations
+- Long-press entry on main list for quick Edit/Delete
+
+---
+
+## Security
+
+- Never commit real `.env` values
+- Restrict Firestore security rules to user-owned paths
+- Consider enabling App Check for production
+
+---
+
+## Roadmap (Ideas)
+
+- Offline queue for entry edits
+- Search / filter entries
+- Theming (dark mode)
+- Optional markdown formatting
+
+---
+
+## License
+
+Private / internal use.
 
 ## Environment Setup
 
