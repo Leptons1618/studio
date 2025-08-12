@@ -1,17 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, TextInput } from 'react-native';
 import { useToast } from '../contexts/ToastContext';
-import { signInAnonymously, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../lib/firebase';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function LoginScreen({ navigation }: any) {
-  const { user, loading } = useAuth();
+  const { user, loading, signInAnonymously } = useAuth();
   const [isSigningIn, setIsSigningIn] = useState(false);
   const { show } = useToast();
-  const [email, setEmail] = useState('test@example.com');
-  const [password, setPassword] = useState('password123');
-  const [isSignUp, setIsSignUp] = useState(false);
+  // Email/password removed for local prototype
 
   useEffect(() => {
     // Navigate to Main screen if user is already logged in
@@ -20,42 +16,10 @@ export default function LoginScreen({ navigation }: any) {
     }
   }, [user, loading, navigation]);
 
-  const handleEmailAuth = async () => {
-    try {
-      setIsSigningIn(true);
-      
-      if (isSignUp) {
-  await createUserWithEmailAndPassword(auth, email, password);
-  show('Account created');
-      } else {
-        await signInWithEmailAndPassword(auth, email, password);
-      }
-      
-      // Navigation will be handled by useEffect when user state changes
-      
-    } catch (error: any) {
-      console.error('Auth Error:', error);
-      
-      if (error.code === 'auth/email-already-in-use') {
-        show('Email already in use');
-      } else if (error.code === 'auth/weak-password') {
-        show('Weak password');
-      } else if (error.code === 'auth/user-not-found') {
-        show('Account not found');
-      } else if (error.code === 'auth/wrong-password') {
-        show('Wrong password');
-      } else {
-        show('Auth error');
-      }
-    } finally {
-      setIsSigningIn(false);
-    }
-  };
-
   const handleAnonymousAuth = async () => {
     try {
       setIsSigningIn(true);
-      await signInAnonymously(auth);
+      await signInAnonymously();
     } catch (error: any) {
   console.error('Anonymous Auth Error:', error);
   show('Guest sign-in failed');
@@ -78,50 +42,13 @@ export default function LoginScreen({ navigation }: any) {
       <Text style={styles.subtitle}>Your Personal Digital Journal</Text>
       
       <View style={styles.form}>
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
-        
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
-        
-        <TouchableOpacity 
-          style={[styles.authButton, isSigningIn && styles.authButtonDisabled]} 
-          onPress={handleEmailAuth}
-          disabled={isSigningIn}
-        >
-          <Text style={styles.authButtonText}>
-            {isSigningIn ? 'Processing...' : (isSignUp ? 'Sign Up' : 'Sign In')}
-          </Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.switchButton}
-          onPress={() => setIsSignUp(!isSignUp)}
-          disabled={isSigningIn}
-        >
-          <Text style={styles.switchButtonText}>
-            {isSignUp ? 'Already have an account? Sign In' : 'Need an account? Sign Up'}
-          </Text>
-        </TouchableOpacity>
-        
         <TouchableOpacity 
           style={[styles.anonymousButton, isSigningIn && styles.authButtonDisabled]} 
           onPress={handleAnonymousAuth}
           disabled={isSigningIn}
         >
           <Text style={styles.anonymousButtonText}>
-            Continue as Guest
+            {isSigningIn ? 'Signing in...' : 'Enter Journal'}
           </Text>
         </TouchableOpacity>
       </View>

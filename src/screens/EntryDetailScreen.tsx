@@ -16,7 +16,7 @@ export default function EntryDetailScreen({ navigation }: any) {
   const route = useRoute<EntryDetailRouteProp>();
   const { entry } = route.params as EntryDetailParams;
   const { user } = useAuth();
-  const { deleteEntry } = useJournalEntries(user?.uid);
+  const { deleteEntry } = useJournalEntries(user?.id);
   const { show } = useToast();
   const [deleting, setDeleting] = useState(false);
   

@@ -14,7 +14,7 @@ const entryColors = [
 
 export default function CreateEntryScreen({ navigation, route }: any) {
   const { user } = useAuth();
-  const { addEntry, updateEntry } = useJournalEntries(user?.uid);
+  const { addEntry, updateEntry } = useJournalEntries(user?.id);
   const editingEntry = route?.params?.entry || null;
   const { show } = useToast();
   

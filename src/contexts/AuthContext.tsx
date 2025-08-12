@@ -1,29 +1,29 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { User, onAuthStateChanged } from 'firebase/auth';
-import { auth } from '../lib/firebase';
 
-interface AuthContextType {
-  user: User | null;
-  loading: boolean;
-}
+interface LocalUser { id: string; anonymous?: boolean; email?: string; }
 
-const AuthContext = createContext<AuthContextType>({ user: null, loading: true });
+interface AuthContextType { user: LocalUser | null; loading: boolean; signInAnonymously: () => Promise<void>; signOut: () => Promise<void>; }
+
+const AuthContext = createContext<AuthContextType>({ user: null, loading: true, signInAnonymously: async () => {}, signOut: async () => {} });
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<LocalUser | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
+  // In-memory only; no persistence
+  setLoading(false);
   }, []);
 
+  const signInAnonymously = async () => {
+    const newUser: LocalUser = { id: Math.random().toString(36).slice(2), anonymous: true };
+    setUser(newUser);
+  };
+
+  const signOut = async () => { setUser(null); };
+
   return (
-    <AuthContext.Provider value={{ user, loading }}>
+  <AuthContext.Provider value={{ user, loading, signInAnonymously, signOut }}>
       {children}
     </AuthContext.Provider>
   );

@@ -3,12 +3,11 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { useJournalEntries } from '../hooks/useJournalEntries';
-import { auth } from '../lib/firebase';
-import { signOut } from 'firebase/auth';
+// Firebase removed for local prototype
 
 export default function MainScreen({ navigation }: any) {
-  const { user } = useAuth();
-  const { entries, loading, deleteEntry } = useJournalEntries(user?.uid);
+  const { user, signOut } = useAuth();
+  const { entries, loading, deleteEntry } = useJournalEntries(user?.id);
   const { show } = useToast();
 
   const handleCreateEntry = () => {
@@ -17,7 +16,7 @@ export default function MainScreen({ navigation }: any) {
 
   const handleSignOut = async () => {
     try {
-      await signOut(auth);
+  await signOut();
       navigation.navigate('Login');
       show('Signed out');
     } catch (error) {

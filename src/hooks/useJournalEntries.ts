@@ -1,16 +1,5 @@
 import { useState, useEffect } from 'react';
-import { db } from '../lib/firebase';
-import {
-  collection,
-  query,
-  onSnapshot,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  doc,
-  orderBy,
-  serverTimestamp,
-} from 'firebase/firestore';
+import { addEntryLocal, updateEntryLocal, deleteEntryLocal, listEntriesLocal } from '../lib/localStore';
 import { type JournalEntry, type JournalEntryData } from '../types';
 
 function stripHtml(html: string) {
@@ -22,81 +11,53 @@ export function useJournalEntries(userId: string | undefined) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let unsubscribe: () => void = () => {};
-
-    if (userId) {
-      setLoading(true);
-      const collectionRef = collection(db, 'users', userId, 'entries');
-      const q = query(collectionRef, orderBy('updatedAt', 'desc'));
-
-      unsubscribe = onSnapshot(q, (snapshot) => {
-        const serverEntries: JournalEntry[] = snapshot.docs.map(docSnap => {
-          const data = docSnap.data() as any;
-          // Migration: ensure content is plain text (one-time transform in memory; saving later will persist)
-          if (typeof data.content === 'string' && /<[^>]+>/.test(data.content)) {
-            data.content = stripHtml(data.content);
-          }
-          return {
-            id: docSnap.id,
-            ...data,
-          } as JournalEntry;
-        });
-        setEntries(serverEntries);
-        setLoading(false);
-      }, (error) => {
-        console.error("Error fetching journal entries:", error);
+    let cancelled = false;
+    (async () => {
+      if (userId) {
+        setLoading(true);
+        const list = await listEntriesLocal(userId);
+        if (!cancelled) {
+          setEntries(list);
+          setLoading(false);
+        }
+      } else {
         setEntries([]);
         setLoading(false);
-      });
-    } else {
-      setEntries([]);
-      setLoading(false);
-    }
-
-    return () => unsubscribe();
+      }
+    })();
+    return () => { cancelled = true; };
   }, [userId]);
 
   const addEntry = async (entry: JournalEntryData) => {
-    if(userId) {
-        try {
-            const collectionRef = collection(db, 'users', userId, 'entries');
-            await addDoc(collectionRef, {
-              title: entry.title,
-              content: entry.content,
-              color: entry.color,
-              createdAt: serverTimestamp(),
-              updatedAt: serverTimestamp(),
-            });
-        } catch (error) {
-            console.error("Error adding entry: ", error);
-        }
+    if (userId) {
+      try {
+        const saved = await addEntryLocal(userId, entry);
+        setEntries(prev => [saved, ...prev]);
+      } catch (error) {
+        console.error('Error adding entry:', error);
+      }
     }
   };
 
   const updateEntry = async (entry: JournalEntry) => {
     if (userId) {
-        const { id } = entry;
-        const entryRef = doc(db, 'users', userId, 'entries', id);
-        try {
-            await updateDoc(entryRef, {
-              title: entry.title,
-              content: entry.content,
-              color: entry.color,
-              updatedAt: serverTimestamp(),
-            });
-        } catch (error) {
-            console.error("Error updating entry: ", error);
-        }
+      try {
+        const updated = await updateEntryLocal(userId, entry);
+        setEntries(prev => prev.map(e => e.id === updated.id ? updated : e));
+      } catch (error) {
+        console.error('Error updating entry:', error);
+      }
     }
   };
 
   const deleteEntry = async (id: string) => {
-    if(userId) {
-        try {
-            await deleteDoc(doc(db, 'users', userId, 'entries', id));
-        } catch (error) {
-            console.error("Error deleting entry: ", error);
-        }
+    if (userId) {
+      try {
+        await deleteEntryLocal(userId, id);
+        setEntries(prev => prev.filter(e => e.id !== id));
+      } catch (error) {
+        console.error('Error deleting entry:', error);
+      }
     }
   };
 
