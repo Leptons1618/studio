@@ -16,11 +16,13 @@ const firebaseConfig = {
   appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID!
 };
 
-// Initialize Firebase
+// Initialize (or reuse) the Firebase app
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
+// Initialize Auth (once) with a lightweight AsyncStorage persistence shim for React Native
 let auth: Auth;
-if (!getApps().length) {
+if (getApps().length === 1) {
+  // First initialization just happened above
   auth = initializeAuth(app, {
     persistence: {
       type: 'LOCAL',
