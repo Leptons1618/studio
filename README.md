@@ -1,8 +1,27 @@
-# ChronoCanvas App Manual
+# ChronoCanvas (Web Application)
 
-Welcome to ChronoCanvas, your personal digital journal designed for reflection and organization. This manual will guide you through using the app's features.
+This branch (`web-app`) contains the original **Next.js web application** for ChronoCanvas. The actively developed **mobile-first** codebase now lives on the `master` branch (Expo / React Native).
 
-## Environment Setup
+## Branch Overview
+
+| Branch | Purpose |
+| ------ | ------- |
+| `master` | Mobile app (Expo / React Native) – primary ongoing development |
+| `web-app` | Archived web app (Next.js) retained for reference |
+
+If you're looking to work on the mobile version, switch to:
+
+```bash
+git checkout master
+```
+
+---
+
+## Web App Manual
+
+Welcome to the archived ChronoCanvas web client. Below are the original usage and setup instructions.
+
+## Environment Setup (Web)
 
 Before using ChronoCanvas, you need to configure your environment variables:
 
@@ -33,7 +52,7 @@ NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
 
 **Note:** Never commit your `.env.local` file to version control. It contains sensitive information.
 
-## Development
+## Development (Web)
 
 ### Installing Dependencies
 
@@ -56,7 +75,7 @@ npm run build
 npm run start
 ```
 
-## Getting Started
+## Getting Started (Web)
 
 To begin using ChronoCanvas, you will need to sign in using your Google account.
 
@@ -66,7 +85,7 @@ To begin using ChronoCanvas, you will need to sign in using your Google account.
 
 Once successfully authenticated, you will be directed to your journal dashboard.
 
-## Managing Journal Entries
+## Managing Journal Entries (Web)
 
 ChronoCanvas allows you to easily create, edit, and delete your journal entries.
 
@@ -92,7 +111,7 @@ ChronoCanvas allows you to easily create, edit, and delete your journal entries.
 3.  Click the delete icon.
 4.  You may be prompted to confirm your decision to delete the entry. Confirm to proceed.
 
-## Text Formatting
+## Text Formatting (Web)
 
 ChronoCanvas provides basic text formatting options to enhance your entries.
 
@@ -104,7 +123,7 @@ When the entry editor is open, you will see a toolbar with formatting options:
 
 You can combine these formatting options on the same text.
 
-## Coloring Entries and Text
+## Coloring Entries and Text (Web)
 
 ChronoCanvas offers options to color-code your entries and apply color to your text for visual organization and style.
 
@@ -121,7 +140,26 @@ ChronoCanvas offers options to color-code your entries and apply color to your t
 3.  Click on the text coloring tool to reveal a palette of 10 UI-matching colors.
 4.  Click on the desired color from the palette to apply it to the selected text.
 
-## Google Authentication
+## Google Authentication (Web)
+
+---
+
+## Looking for the Mobile App?
+
+The mobile app README is on `master` or in `ChronoCanvasMobile/README.md` in that branch.
+
+```bash
+git checkout master
+cat README.md
+```
+
+The mobile version now uses plain‑text entries (legacy HTML is sanitized client-side) and includes toast feedback, offline-friendly auth persistence, and CRUD parity.
+
+---
+
+## Status
+
+This web code is frozen; security patches only if needed. Consider migrating any new feature ideas directly into the mobile branch.
 
 ChronoCanvas uses Google Authentication to provide a secure and convenient way to access your journal. Your journal data is linked to your Google account, ensuring privacy and allowing you to access your entries across devices where you sign in with the same account.
 
