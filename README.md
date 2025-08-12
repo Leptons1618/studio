@@ -2,6 +2,111 @@
 
 A React Native mobile application for ChronoCanvas journal app, built with Expo.
 
+### Authentication
+Supports Anonymous (optional), Email/Password, and Google sign-in via Firebase Auth.
+
+Enable providers in Firebase Console → Authentication → Sign-in method. The error `auth/admin-restricted-operation` means the provider (often Anonymous) is disabled or new sign-ups are blocked.
+
+Configure environment variables in `.env.local` (Expo loads them) with your Firebase project settings plus:
+
+```
+EXPO_PUBLIC_GOOGLE_CLIENT_ID=<Web OAuth client ID>
+EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID=<Android OAuth client ID>
+```
+
+If you later decide to disable anonymous sign-in, remove the call to `signInAnonymously` and show an auth screen instead.
+
+### Data Model & Sync
+Entries live at `users/{uid}/entries/{entryId}` with fields: `title, content, color, createdAt, updatedAt`.
+
+- `createdAt` & `updatedAt` use `serverTimestamp()` for consistent ordering.
+- Real-time listener (ordered by `updatedAt desc`).
+- HTML is stripped defensively from legacy content before rendering.
+- Firestore offline cache handles queued writes; we add a lightweight optimistic concurrency check on updates.
+
+### Local Development
+1. Install deps: `npm install`
+2. Create `.env.local` with Firebase keys and Google client ID.
+3. Start: `npm start` then run on device/emulator.
+
+### Future Hardening Ideas
+- Field allowlist & type validation in security rules (see commented examples in `firestore.rules`).
+- Stronger concurrency via a numeric `version` field.
+- At-rest encryption for journal content (client-side symmetric key per user synchronized via user credential).
+- Full-text search via an external index (e.g. Typesense, Meilisearch) fed by Cloud Functions.
+- Attachment support (images) using Firebase Storage with rule pairing.
+
+### Firestore Security Rules
+Rules file: `firestore.rules`. Deploy to your active project (e.g. `chronopad-e252c`):
+
+```
+firebase deploy --only firestore:rules
+```
+
+Summary:
+- Authenticated user ↔ their own subtree only.
+- Global deny fallback.
+- Uncomment provided validation snippets to enforce schema & immutability of `createdAt`.
+
+Add an index (if needed later for compound queries) via Firebase console or `firestore.indexes.json`.
+
+### Offline & Conflict Strategy
+Current behavior:
+1. Firestore offline persistence (queue + cache) handles connectivity drops.
+2. Writes use server timestamps; ordering is deterministic by `updatedAt`.
+3. Update path uses a Firestore transaction comparing previous `updatedAt` (optimistic concurrency). If mismatch, it logs a conflict; you can prompt user to reload.
+
+Potential upgrades:
+- Conflict resolution UI (diff & merge).
+- Add numeric `version` increment to block stale overwrites more explicitly.
+- Maintain local optimistic queue state for user feedback on pending sync.
+
+### Suggested Indexes
+Current query: orderBy updatedAt only (no filter) — no composite index required. If you add filters like `where('color','==',X)` with the order, Firestore will prompt to create an index.
+
+### Android Build Guide
+Profiles (see `eas.json`):
+- development: Dev client + internal distribution.
+- preview: Internal APK (quick install) buildType=apk.
+- production: Play Store AAB.
+
+Steps:
+1. Login & configure EAS
+   ```pwsh
+   npx expo login
+   npx eas whoami
+   ```
+2. Create Keystore (EAS manages automatically on first prod build). Save credentials after build.
+3. Build preview APK for testers:
+   ```pwsh
+   npx eas build --platform android --profile preview
+   ```
+4. Production AAB:
+   ```pwsh
+   npx eas build --platform android --profile production
+   ```
+5. Submit to Play (after creating app in Play Console):
+   ```pwsh
+   npx eas submit --platform android --profile production --latest
+   ```
+
+Local debug (faster iteration):
+```pwsh
+npx expo run:android
+```
+
+Add Google Sign-In SHA:
+1. Get SHA-1/256 from EAS credentials page (production) and debug keystore locally.
+2. Add both fingerprints in Firebase Console → Android app settings.
+3. If you rely on native Google services later (not just OAuth via Auth Session), download and place `google-services.json` under `android/app` (not required for current env-based config).
+
+New Architecture: Removed `newArchEnabled: false`; Expo Go always runs new arch. Avoid conflicting flags in production.
+
+Custom URL Scheme: Added `scheme: "chronocanvas"` for OAuth redirects; ensure `redirectUri` generation in auth flows references it.
+
+Environment:
+Ensure `EXPO_PUBLIC_GOOGLE_CLIENT_ID` points to Web OAuth client; add an Android OAuth client (package name + SHA) for better reliability when moving to native Google services.
+
 ## 📱 Features
 
 - **Google Authentication** - Secure login with Google accounts
@@ -112,6 +217,8 @@ EXPO_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
 EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project.firebasestorage.app
 EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
 EXPO_PUBLIC_FIREBASE_APP_ID=your_app_id
+EXPO_PUBLIC_GOOGLE_CLIENT_ID=your_web_oauth_client_id
+EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID=your_android_oauth_client_id
 ```
 
 ## 📦 Dependencies
@@ -124,9 +231,19 @@ EXPO_PUBLIC_FIREBASE_APP_ID=your_app_id
 
 ## 🔐 Security Notes
 
-- Never commit `.env` files with real credentials
-- Use `.env.example` for sharing configuration templates
-- Environment variables with `EXPO_PUBLIC_` prefix are available to client-side code
+- Do not commit real secrets; Firebase client keys are public by design but still avoid leaking unused projects.
+- Use `.env.example` as a template; only `EXPO_PUBLIC_` prefixed vars are exposed to the bundle.
+- Deploy updated security rules whenever you modify `firestore.rules` (CI step recommended).
+
+## 🐛 Troubleshooting
+| Symptom | Likely Cause | Fix |
+|---------|--------------|-----|
+| `auth/admin-restricted-operation` on anonymous sign-in | Anonymous provider disabled | Enable in Firebase Auth settings or remove usage |
+| Repeating Firestore WebChannel transport errors | Network offline / emulator networking / WebChannel instability | Ensure network; forced long polling via `experimentalForceLongPolling` |
+| Google sign-in fails in release only | Missing release SHA-1 in Firebase | Add release SHA-1 & SHA-256, wait a few minutes |
+| Expo build linking fails (invalid projectId) | Non-UUID projectId used | Use real EAS project UUID in `app.json` |
+| OAuth redirect stuck | Missing `scheme` in config | Add `scheme` under `expo` |
+
 
 ## 🚀 Deployment
 

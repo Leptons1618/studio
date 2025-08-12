@@ -5,8 +5,8 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
-  "newArchEnabled": false,
+  "userInterfaceStyle": "light",
+  "scheme": "chronocanvas",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -28,10 +28,11 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "extra": {
+  "extra": {
       "eas": {
-        "projectId": "your-project-id-here"
+        "projectId": "d43ec30f-d725-409b-bef5-9fcbe6c1243e"
       }
-    }
+    },
+    "owner": "nucleargandhi64"
   }
 }
